@@ -62,12 +62,28 @@ namespace {{Namespace}}
         }
         {{#MethodList}}
 
+        {{#MethodTypeParameters}}
+        private static class TypeHelper_{{Id}}<{{.}}>
+        {
+            public static readonly Type[] ArgumentTypes = {{#ArgumentTypesList}}new Type[] { {{ArgumentTypesList}} }{{/ArgumentTypesList}}{{^ArgumentTypesList}}Array.Empty<Type>(){{/ArgumentTypesList}};
+            public static readonly Type[] TypeParameters = {{#MethodTypeParameterList}}new Type[] { {{MethodTypeParameterList}} }{{/MethodTypeParameterList}}{{^MethodTypeParameterList}}Array.Empty<Type>(){{/MethodTypeParameterList}};
+        }
+        {{/MethodTypeParameters}}
+        {{^MethodTypeParameters}}
+        private static readonly Type[] ArgumentTypes_{{Id}} = {{#ArgumentTypesList}}new Type[] { {{ArgumentTypesList}} }{{/ArgumentTypesList}}{{^ArgumentTypesList}}Array.Empty<Type>(){{/ArgumentTypesList}};
+        {{/MethodTypeParameters}}
+
         /// <inheritdoc />
         {{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{ArgumentListWithTypes}})
         {
             {{#IsRefitMethod}}
-            var arguments = new object[] { {{ArgumentList}} };
-            var func = requestBuilder.BuildRestResultFuncForMethod("{{Name}}", new Type[] { {{ArgumentTypesList}} }{{#MethodTypeParameterList}}, new Type[] { {{.}} }{{/MethodTypeParameterList}});
+            var arguments = {{#ArgumentList}}new object[] { {{ArgumentList}} }{{/ArgumentList}}{{^ArgumentList}}Array.Empty<object>(){{/ArgumentList}};
+            {{#MethodTypeParameters}}
+            var func = requestBuilder.BuildRestResultFuncForMethod("{{Name}}", TypeHelper_{{Id}}<{{.}}>.ArgumentTypes, TypeHelper_{{Id}}<{{.}}>.TypeParameters);
+            {{/MethodTypeParameters}}
+            {{^MethodTypeParameters}}
+            var func = requestBuilder.BuildRestResultFuncForMethod("{{Name}}", ArgumentTypes_{{Id}});
+            {{/MethodTypeParameters}}
             return ({{ReturnType}})func(Client, arguments);
             {{/IsRefitMethod}}
             {{^IsRefitMethod}}

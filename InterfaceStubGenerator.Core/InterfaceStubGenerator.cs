@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -447,6 +448,27 @@ namespace Refit.Generator
         public string InterfaceName { get; set; }
         public List<string> TypeParametersInfo { get; set; }
         public string TypeParameters => TypeParametersInfo != null ? string.Join(", ", TypeParametersInfo) : null;
+
+        public string Id
+        {
+            get
+            {
+                HashCode hashCode = default;
+
+                hashCode.Add(IsRefitMethod);
+                hashCode.Add(Name);
+                hashCode.Add(ReturnType);
+                hashCode.Add(ArgumentListWithTypes);
+                hashCode.Add(MethodTypeParameters);
+                hashCode.Add(TypeParameters);
+                hashCode.Add(InterfaceName);
+
+                var key = hashCode.ToHashCode();
+
+                // Cast to uint as we can't have an id starting with the '-' character
+                return ((uint)key).ToString(CultureInfo.InvariantCulture);
+            }
+        }
     }
 
     public class ArgumentInfo
